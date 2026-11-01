@@ -1,0 +1,77 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://school-management-saas/contracts/envelope.schema.json",
+  "title": "Standard API envelope",
+  "description": "Every JSON response returned by the Laravel API under /api/v1 uses this envelope. Success payloads carry the requested resource in `data`; failures carry field-level details in `errors`. Paginated success responses additionally carry `meta` and `links`.",
+  "oneOf": [
+    { "$ref": "#/definitions/success" },
+    { "$ref": "#/definitions/error" }
+  ],
+  "definitions": {
+    "success": {
+      "type": "object",
+      "description": "Successful response.",
+      "required": ["success", "message", "data"],
+      "properties": {
+        "success": { "const": true },
+        "message": {
+          "type": "string",
+          "examples": ["Request successful"]
+        },
+        "data": {
+          "description": "Single resource (object), collection (array) or null when there is no payload."
+        },
+        "meta": { "$ref": "#/definitions/paginationMeta" },
+        "links": { "$ref": "#/definitions/paginationLinks" }
+      },
+      "additionalProperties": false
+    },
+    "error": {
+      "type": "object",
+      "description": "Failed response.",
+      "required": ["success", "message", "errors"],
+      "properties": {
+        "success": { "const": false },
+        "message": {
+          "type": "string",
+          "examples": ["Request failed", "The given data was invalid."]
+        },
+        "errors": {
+          "type": "object",
+          "description": "Field name to list of messages. Empty object for non-field errors.",
+          "additionalProperties": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "paginationMeta": {
+      "type": "object",
+      "description": "Present only on paginated collections.",
+      "required": ["current_page", "per_page", "total", "last_page"],
+      "properties": {
+        "current_page": { "type": "integer", "minimum": 1 },
+        "per_page": { "type": "integer", "minimum": 1, "maximum": 100 },
+        "total": { "type": "integer", "minimum": 0 },
+        "last_page": { "type": "integer", "minimum": 1 },
+        "from": { "type": ["integer", "null"], "minimum": 1 },
+        "to": { "type": ["integer", "null"], "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "paginationLinks": {
+      "type": "object",
+      "description": "Present only on paginated collections.",
+      "required": ["first", "prev", "next", "last"],
+      "properties": {
+        "first": { "type": ["string", "null"], "format": "uri" },
+        "prev": { "type": ["string", "null"], "format": "uri" },
+        "next": { "type": ["string", "null"], "format": "uri" },
+        "last": { "type": ["string", "null"], "format": "uri" }
+      },
+      "additionalProperties": false
+    }
+  }
+}
